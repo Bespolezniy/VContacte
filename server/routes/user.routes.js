@@ -27,5 +27,10 @@ router.route("/api/users/photo/:userId")
   .get(userCtrl.photo, userCtrl.defaultPhoto)
 router.route("/api/users/defaultphoto")
   .get(userCtrl.defaultPhoto)
+
+router.route("/api/users/follow/")
+  .put(authCtrl.signin, userCtrl.addFollowing, userCtrl.addFollower)
+router.route("/api/users/unfollow/")
+  .put(authCtrl.signout, userCtrl.removeFollowing, userCtrl.removeFollower)
   
 export default router

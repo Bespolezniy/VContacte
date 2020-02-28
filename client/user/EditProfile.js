@@ -8,7 +8,8 @@ import {
   Icon,
   CardActions,
   Button,
-  Typography
+  Typography,
+  Avatar
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
 import FileUpload from "@material-ui/icons/FileCopy"
@@ -36,6 +37,9 @@ const EditProfile = (props) => {
   const [photo, setPhoto] = useState("")
   const [photoFile, setPhotoFile] = useState(null)
   const classes = useStyles()
+  const photoUrl = userId
+  ? `/api/users/photo/${userId}?${new Date().getTime()}`
+  : '/api/users/defaultphoto'
 
   const init = userId => {
     const jwt = auth.isAuthenticated()
@@ -119,6 +123,10 @@ const EditProfile = (props) => {
         >
           Edit Profile
         </Typography>
+
+        <Avatar>
+          <Avatar src={photoUrl}/>
+        </Avatar>
 
         <input 
           accept="image/*" 
