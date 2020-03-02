@@ -13,70 +13,68 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Typography
+  Typography,
+  Box
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
+import { LockOpen } from "@material-ui/icons"
 
 import { create } from "./api-user"
 
 const useStyles = makeStyles( theme => ({
-  title: {
-    padding:`${theme.spacing(3)}px ${theme.spacing(2.5)}px
-    ${theme.spacing(2)}px`,
-    color: theme.palette.text.secondary
+  card: {
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    minHeight: 500
+  },
+  link: {
+    fontWeight: "bold",
+    textDecoration: "none"
   }
 }))
 
 const SignUp = () => {
 
-  const [name, setName] = useState("")
-  const [password, setPassword] = useState("")
-  const [email, setEmail] = useState("")
-  const [open, setOpen] = useState(false)
-  const [error, setError] = useState("")
+  const [values, setValues] = useState({
+    name: "",
+    password: "",
+    email: "",
+    open: false,
+    error: ""
+  })
   const classes = useStyles()
 
-  const handleChange = field => event => {
-    switch(field) {
-      case "name":
-        setName(event.target.value)
-        break
-      case "email":
-        setEmail(event.target.value)
-        break
-      case "password":
-        setPassword(event.target.value)
-        break
-      default:
-        break
-    }
+  const handleChange = name => event => {
+    setValues({ ...values, [name]: event.target.value })
   }
 
   const handleSubmit = () => {
     const user = {
-      name: name || undefined,
-      email: email || undefined,
-      password: password || undefined
+      name: values.name || undefined,
+      email: values.email || undefined,
+      password: values.password || undefined
     }
     create(user).then( data => {
 
       if (data.error) {
-        setError(data.error)
+        setValues({ ...values, error: data.error})
       } else {
-        setError("")
-        setOpen(true)
+        setValues({ ...values, error: "", open: true})
       }
     })
   }
 
   return (
     <div>
-      <Card>
+      <Card className={classes.card}>
         <CardContent>
           <Typography 
-            type="headline" 
+            type="headline"
+            variant="h4"
             component="h2"
-            className={classes.title}
+            align="center"
           >
             Sign Up
           </Typography>
@@ -84,8 +82,10 @@ const SignUp = () => {
           <TextField 
             id="name" 
             label="Name"
-            value={name}
+            value={values.name}
             onChange={handleChange("name")}
+            variant="outlined"
+            size="small"
             margin="normal"
           />
           <br/>
@@ -94,8 +94,10 @@ const SignUp = () => {
             id="email" 
             type="email" 
             label="Email" 
-            value={email}
+            value={values.email}
             onChange={handleChange("email")}
+            variant="outlined"
+            size="small"
             margin="normal"
           />
           <br/>
@@ -104,21 +106,29 @@ const SignUp = () => {
             id="password" 
             type="password"
             label="Password" 
-            value={password}
+            value={values.password}
             onChange={handleChange("password")}
             margin="normal"
+            variant="outlined"
+            size="small"
           />
           <br/>
 
-          {error && (
-            <Typography component="p" color="error">
+          {values.error && (
+            <Box display="flex" alignItems="center">
               <Icon 
                 color="error"
               >
                 error
               </Icon>
-              {error}
-            </Typography>
+
+              <Typography 
+                component="p" 
+                color="error"
+              >
+               {values.error}
+              </Typography>
+            </Box>
           )}
         </CardContent>
 
@@ -128,12 +138,12 @@ const SignUp = () => {
             variant="contained"
             onClick={handleSubmit}
           >
-            Submit
+            Sign up
           </Button>
         </CardActions>
       </Card>
 
-    <Dialog open={open} disableBackdropClick={true}>
+    <Dialog open={values.open} disableBackdropClick={true}>
       <DialogTitle>New Account</DialogTitle>
 
       <DialogContent>
@@ -143,12 +153,15 @@ const SignUp = () => {
       </DialogContent>
 
       <DialogActions>
-        <Link to="/signin">
+        <Link className={classes.link} to="/signin">
           <Button 
             color="primary" 
             autoFocus="autoFocus" 
             variant="contained"
-          >
+            startIcon={
+              <LockOpen />
+            }
+          > 
             Sign In
           </Button>
         </Link>

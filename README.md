@@ -1,42 +1,54 @@
-# My React-node-boiler code for fast start developing fullstack apps
+# [Social-marks](#) 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Introduction
 
-A base application for developing different MERN applications.
-This project was bootstrapped with [My mern-setup](https://github.com/Bespolezniy/mern-setup).
+This is a social media application with rudimentary features inspired
+by existing social media platform Twitter.
+This project was bootstrapped with [My react-node-boilerplate](https://github.com/Bespolezniy/react-node-boilerplate).
 
 ***
-## What does this code offer:
-1. React frontend (including frontend routing and basic server-side
-rendering of the React views)
-2. React Router for frontend
-routing
-3. Material-UI to use their existing components
-4. Fetch API to connect to the backend
-5. Authentication and authorization on the frontend views using
-`sessionStorage` to store user-specific details and JWT fetched from the server on
-successful sign-in, and also by limiting access to certain views
-6. Basic server-side rendering
+**Browser** Support
+
+![Chrome](https://raw.github.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Opera](https://raw.github.com/alrra/browser-logos/master/src/opera/opera_48x48.png) | ![Edge](https://raw.github.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![Firefox](https://raw.github.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) |![IE](https://raw.github.com/alrra/browser-logos/master/src/archive/internet-explorer_9-11/internet-explorer_9-11_48x48.png) |
+---- | --- | --- | --- | --- |
+Chrome ✔ | Opera ✔ | Edge ✔ | Firefox ✔ | Explorer ✔
 
 ***
-## Under the hood:
-1. Webpack
-2. Babel (ES6/ES7 support)
-3. MongoDB
-4. Node
-5. React
-6. Hot Reloading
-7. Express
-8. Jwt
-9. Lodash
+
+## Quick Overview
+
+Download this repo and open console in directory
+
+```sh
+yarn( or npm) install
+npm run development
+```
+and type in browser [http://localhost:3000/](http://localhost:3000/)
 
 ***
-## How to make it work?
-1. Clone this repo
-2. Run `npm install` in terminal
-3. Run `npm run development`
-4. Go to `http://localhost:3000`
+## Technical Sheet
+
+Code technologies I got involved with while working on this project.
+
+### Frontend side
+
+1. [**React**](https://ru.reactjs.org/docs/getting-started.html)
+1. [**Material-ui**](https://material-ui.com/)
+1. [**React-router**](https://reacttraining.com/react-router/web/example/basic)
+1. [**Webpack**](https://webpack.js.org/concepts/configuration/)
+
+### Backend side
+
+1. [**Express**](https://expressjs.com/)
+1. [**Node**](https://nodejs.org/en/)
+1. [**MongoDB**](https://www.mongodb.com/)
+1. [**Mongoose**](https://mongoosejs.com/)
+1. [**Express-jwt**](https://github.com/auth0/express-jwt)
 
 ***
+## License
+
+[MIT](http://opensource.org/licenses/MIT)
+
 Copyright (c) 2020 Plotnickov Yaroslav.

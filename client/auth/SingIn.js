@@ -8,58 +8,60 @@ import {
   Icon,
   CardActions,
   Button,
-  Typography
-} from "@material-ui/core"
+  Typography,
+  Box
+} from "@material-ui/core/"
 import { makeStyles } from "@material-ui/core/styles"
+import { LockOpen } from "@material-ui/icons"
 
 import { signin } from "./api-auth"
 import auth from "./auth-helper"
 
 const useStyles = makeStyles( theme => ({
-  title: {
-    padding:`${theme.spacing(3)}px ${theme.spacing(2.5)}px
-    ${theme.spacing(2)}px`,
-    color: theme.palette.text.secondary
+  card: {
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "center",
+    flexDirection: "column",
+    minHeight: 500
   }
 }))
 
 const SignIn = (props) => {
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [redirectTo, setRedirectTo] = useState(false)
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+    error: "",
+    redirectTo: false
+  })
   const classes = useStyles()
 
   const handleSubmit = () => {
     const user = {
-      email: email || undefined,
-      password: password || undefined
+      email: values.email || undefined,
+      password: values.password || undefined
     }
 
     signin(user).then( data => {
 
       if (data.error) {
-        setError(data.error)
+        setValues({ ...values, error: data.error})
       } else {
         auth.authenticate(data, () => {
-          setRedirectTo(true)
+          setValues({ 
+            ...values, 
+            error: "",
+            redirectTo: true
+          })
         })
       }
+
     })
   }
 
-  const handleChange = field => event => {
-    switch(field) {
-      case "email":
-        setEmail(event.target.value)
-        break
-      case "password":
-        setPassword(event.target.value)
-        break
-      default:
-        break
-    }
+  const handleChange = name => event => {
+    setValues({ ...values, [name]: event.target.value })
   }
 
   const { from } = props.location.state || {
@@ -68,17 +70,18 @@ const SignIn = (props) => {
     }
   }
 
-  if (redirectTo) {
+  if (values.redirectTo) {
     return (<Redirect to={from}/>)
   }
 
   return (
-    <Card>
+    <Card className={classes.card}>
       <CardContent>
-        <Typography 
-          type="headline" 
+        <Typography
+          align="center"
+          type="headline"
+          variant="h4"
           component="h2" 
-          className={classes.title}
         >
           Sign In
         </Typography>
@@ -87,27 +90,42 @@ const SignIn = (props) => {
           id="email" 
           type="email" 
           label="Email"  
-          value={email} 
+          value={values.email} 
           onChange={handleChange("email")} 
-          margin="normal"/>
+          margin="normal"
+          size="small"
+          variant="outlined"
+        />
           <br/>
 
         <TextField 
           id="password" 
           type="password" 
           label="Password"  
-          value={password} 
-          onChange={handleChange("password")} 
+          value={values.password} 
+          onChange={handleChange("password")}
+          size="small"
           margin="normal"
+          variant="outlined"
         />
         <br/> 
         
         {
-          error && (
-            <Typography component="p" color="error">
-              <Icon color="error">error</Icon>
-              {error}
-            </Typography>
+          values.error && (
+            <Box display="flex" alignItems="center">
+              <Icon 
+                color="error"
+              >
+                error
+              </Icon>
+
+              <Typography 
+                component="p" 
+                color="error"
+              >
+               {values.error}
+              </Typography>
+            </Box>
           )
         }
       </CardContent>
@@ -116,9 +134,12 @@ const SignIn = (props) => {
         <Button 
           color="primary" 
           variant="contained" 
-          onClick={handleSubmit} 
+          onClick={handleSubmit}
+          startIcon={
+            <LockOpen />
+          }
         >
-          Submit
+          Sign in
         </Button>
       </CardActions>
     </Card>

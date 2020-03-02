@@ -4,19 +4,19 @@ import { Button } from "@material-ui/core"
 
 import { follow, unfollow } from "./api-user"
 
-const FollowButton = (props) => {
+const FollowButton = ({ handleClick, following }) => {
 
   const handleFollow = () => {
-    props.handleClick(follow)
+    handleClick(follow)
   }
 
   const handleUnfollow = () => {
-    props.handleClick(unfollow)
+    handleClick(unfollow)
   }
 
   return (
     <div>
-      { props.following ? (
+      { following ? (
         <Button 
           variant="contained" 
           color="secondary" 

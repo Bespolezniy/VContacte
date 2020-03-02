@@ -1,13 +1,12 @@
 const path = require("path")
 const webpack = require("webpack")
-
 const CURRENT_WORKING_DIR = process.cwd()
+
 const config = {
   name: "browser",
   mode: "development",
   devtool: "eval-source-map",
   entry: [
-    "react-hot-loader/patch",
     "webpack-hot-middleware/client?reload=true",
     path.join(CURRENT_WORKING_DIR, "client/main.js")
   ],
@@ -27,14 +26,19 @@ const config = {
       },
       {
         test: /\.(ttf|eot|svg|gif|jpg|png|webp)(\?[\s\S]+)?$/,
-        use: "file-loader"
+        use: 'file-loader'
       }
     ]
-  }, 
+  },  
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin()
-  ]
+  ],
+  resolve: {
+    alias: {
+      "react-dom": "@hot-loader/react-dom"
+    }
+  }
 }
-  
+
 module.exports = config

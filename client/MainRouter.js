@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { Route, Switch } from "react-router-dom"
 
 import Home from "./core/Home"
@@ -12,13 +12,6 @@ import Menu from "./core/Menu"
 
 const MainRouter = () => {
 
-  useEffect(() => {
-    const jssStyles = document.getElementById("jss-server-side")
-    
-    if (jssStyles && jssStyles.parentNode)  {
-      jssStyles.parentNode.removeChild(jssStyles)
-    }
-  }, [])
   return (
     <div>
       <Menu />

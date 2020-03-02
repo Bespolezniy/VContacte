@@ -1,7 +1,7 @@
 const path = require("path")
 const webpack = require("webpack")
-
 const CURRENT_WORKING_DIR = process.cwd()
+
 const config = {
   mode: "production",
   entry: [
@@ -23,10 +23,10 @@ const config = {
       },
       {
         test: /\.(ttf|eot|svg|gif|jpg|png|webp)(\?[\s\S]+)?$/,
-        use: "file-loader"
+        use: 'file-loader'
       }
     ]
   }
 }
-    
+
 module.exports = config

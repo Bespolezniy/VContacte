@@ -3,7 +3,11 @@ export default ({markup, css}) => {
     <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>React-node boilerplate</title>
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
+        >
+        <title>VContacte</title>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
       </head>

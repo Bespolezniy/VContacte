@@ -17,10 +17,11 @@ import { makeStyles } from "@material-ui/core/styles"
 import { Edit } from "@material-ui/icons"
 
 import { read } from "./api-user"
+import { listByUser } from "../post/api-post"
 import auth from "../auth/auth-helper"
 import DeleteUser from "./DeleteUser"
-import FollowButton from "./FollowButton"
-import FollowGrid from "./FollowGrid"
+import FolowButton from "./FollowButton"
+import ProfileData from "./ProfileData"
 
 const useStyles = makeStyles( theme => ({
   title: {
@@ -30,130 +31,159 @@ const useStyles = makeStyles( theme => ({
   }
 }))
 
-const Profile = props => {
+const Profile = ({match}) => {
 
-  const [user, setUser] = useState({
-    following: [],
-    followers: []
-  })
-  const [error, setError] = useState("")
-  const [redirectToSignIn, setRedirectToSignIn] = useState(false)
-  const [isFollowing, setIsFollowing] = useState(false)
-  const photoUrl = user._id
-  ? `/api/users/photo/${user._id}?${new Date().getTime()}`
-  : '/api/users/defaultphoto'
   const classes = useStyles()
+  const [values, setValues] = useState({
+    user: {
+      following:[], 
+      followers:[]
+    },
+    redirectToSignin: false,
+    following: false
+  })
+  const [posts, setPosts] = useState([])
+  const jwt = auth.isAuthenticated()
+  const photoUrl = values.user._id ? 
+  `/api/users/photo/${values.user._id}?${new Date().getTime()}`: 
+  "/api/users/defaultphoto"
 
-  const checkFollowing = user => {
-    const jwt = auth.isAuthenticated()
-    const match = user.followers.find( follower => {
+  useEffect(() => {
+    const abortController = new AbortController()
+    const signal = abortController.signal
+  
+    read({
+      userId: match.params.userId
+    }, {t: jwt.token}, signal).then( data => {
+
+      if (data && data.error) {
+        setValues({...values, redirectToSignin: true})
+      } else {
+        let following = checkFollow(data)
+        setValues({
+          ...values, 
+          user: data, 
+          following: following
+        })
+        loadPosts(data._id)
+      }
+
+    })
+    return () => {
+      abortController.abort()
+    }
+  }, [match.params.userId])
+  
+  const checkFollow = user => {
+    const match = user.followers.some( follower => {
       return follower._id == jwt.user._id
     })
     return match
   }
 
-  const init = userId => {
-    const jwt = auth.isAuthenticated()
-    read({
-      userId: userId
-    }, 
-    {t: jwt.token})
-      .then( data => {
-
-        if (data.error) {
-          setRedirectToSignIn(true)
-        } else {
-          setUser(data)
-          setIsFollowing(checkFollowing(data))
-        }
-      }
-    )
-  }
-
-  useEffect(() => {
-    init(props.match.params.userId)
-  }, [props.match.params.userId])
-
-  if (redirectToSignIn) {
-    return (<Redirect to="/signin"/>)
-  }
-
   const handleClick = callApi => {
-    const jwt = auth.isAuthenticated()
-
     callApi({
       userId: jwt.user._id
     }, {
       t: jwt.token
-    }, user._id).then( data => {
+    }, values.user._id).then( data => {
 
       if (data.error) {
-        setError(data.error)
+        setValues({...values, error: data.error})
       } else {
-        setUser(data)
-        setIsFollowing(!following)
-      }    
-    }
-  )
-}
-    
-return (
-  <div>
-    <Paper className={classes.root} elevation={4}>
-      <Typography type="title" className={classes.title}>
+        setValues({
+          ...values, 
+          user: data, 
+          following: !values.following
+        })
+      }
+
+    })
+  }
+
+  const loadPosts = user => {
+
+    listByUser({
+      userId: user
+    }, {
+      t: jwt.token
+    }).then( data => {
+
+      if (data.error) {
+        console.log(data.error)
+      } else {
+        setPosts(data)
+      }
+
+    })
+  }
+
+  const removePost = post => {
+    const updatedPosts = posts
+    const index = updatedPosts.indexOf(post)
+    updatedPosts.splice(index, 1)
+    setPosts(updatedPosts)
+  }
+
+  if (values.redirectToSignin) {
+    return <Redirect to='/signin'/>
+  }
+
+  return (
+    <Paper elevation={4}>
+      <Typography 
+        variant="h6"
+        align="center"
+        className={classes.title} 
+      >
         Profile
       </Typography>
 
       <List dense>
         <ListItem>
           <ListItemAvatar>
-            <Avatar>
-              <Avatar src={photoUrl}/>
-            </Avatar>
+            <Avatar src={photoUrl} />
           </ListItemAvatar>
 
           <ListItemText 
-            primary={user.name}
-            secondary={user.email}
-          />
+            primary={values.user.name} 
+            secondary={values.user.email}
+          /> 
+          
+          {
+            auth.isAuthenticated().user &&
+            auth.isAuthenticated().user._id == values.user._id ? (
+              <ListItemSecondaryAction>
+                <Link to={"/user/edit/" + values.user._id}>
+                  <IconButton aria-label="Edit" color="primary">
+                    <Edit/>
+                  </IconButton>
+                </Link>
 
-          {auth.isAuthenticated().user && 
-          auth.isAuthenticated().user._id == user._id ? (
-            <ListItemSecondaryAction>
-              <Link to={"/user/edit/" + user._id}>
-                <IconButton color="primary">
-                  <Edit/>
-                </IconButton>
-              </Link>
-
-              <DeleteUser userId={user._id}/>
-            </ListItemSecondaryAction>
-          ) : (
-            <ListItemSecondaryAction>
-              <FollowButton 
-                following={isFollowing} 
-                handleClick={handleClick} 
+                <DeleteUser userId={values.user._id}/>
+              </ListItemSecondaryAction>
+            ) : (
+              <FolowButton 
+                following={values.following}
+                handleClick={handleClick}
               />
-            </ListItemSecondaryAction>
-          )}
+            )
+          }
         </ListItem>
         <Divider/>
 
         <ListItem>
           <ListItemText 
-            primary={"Joined: " + (new Date(user.created)).toDateString()}
+            primary={values.user.about} 
+            secondary={
+              "Joined: " + (new Date(values.user.created)).toDateString()
+            }
           />
         </ListItem>
-
-        <ListItem>
-          <ListItemText primary={user.about}/>
-        </ListItem>
       </List>
-
-      <FollowGrid people={user.followers}/>
-    </Paper>
-  </div>
+      <ProfileData user={values.user} posts={posts} removePostUpdate={removePost}/>
+    </Paper>  
   )
 }
-  
+
 export default Profile

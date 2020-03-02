@@ -9,8 +9,15 @@ import {
   IconButton,
   Button,
   Typography
-} from "@material-ui/core"
-import { Home } from "@material-ui/icons"
+} from "@material-ui/core/"
+import { 
+  Home, 
+  Book, 
+  People,
+  LockOpen,
+  AccountBox,
+  ExitToApp
+} from "@material-ui/icons"
 
 import auth from "../auth/auth-helper"
 
@@ -38,8 +45,8 @@ const Menu = () => {
     <div>
       <AppBar position="static">
         <Toolbar>
-          <Typography type="title" color="inherit">
-            React-node boilerplate
+          <Typography variant="h6" type="title" color="inherit">
+            VContacte
           </Typography>
 
           <Link className={classes.link} to="/">
@@ -54,28 +61,69 @@ const Menu = () => {
           <Link className={classes.link} to="/users">
             <Button 
               style={isActive(history, "/users")}
+              startIcon={
+                <People />
+              }
             >
-              Users
+              People
             </Button>
           </Link>
 
-          {!auth.isAuthenticated() && (<span>
-            <Link className={classes.link} to="/signup">
-              <Button 
-                style={isActive(history, "/signup")}
-              >
-                Sign Up
-              </Button>
-            </Link>
+          {!auth.isAuthenticated() && (
+            <span>
+              <Link className={classes.link} to="/signup">
+                <Button 
+                  style={isActive(history, "/signup")}
+                  startIcon={
+                    <Book />
+                  }
+                >
+                  Sign Up
+                </Button>
+              </Link>
 
-            <Link className={classes.link} to="/signin">
-              <Button 
-                style={isActive(history, "/signin")}
-              >
-                Sign In
-              </Button>
-            </Link>
-          </span>)}
+              <Link className={classes.link} to="/signin">
+                <Button 
+                  style={isActive(history, "/signin")}
+                  startIcon={
+                    <LockOpen />
+                  }
+                >
+                  Sign In
+                </Button>
+              </Link>
+            </span>
+          )}
+
+          {
+            auth.isAuthenticated() && (
+              <span>
+                <Link 
+                  className={classes.link} 
+                  to={"/user/" + auth.isAuthenticated().user._id}
+                >
+                  <Button 
+                    style={isActive(history, "/user/" + auth.isAuthenticated().user._id)}
+                    startIcon={
+                      <AccountBox />
+                    }
+                  >
+                    My Profile
+                  </Button>
+                </Link>
+
+                <Button 
+                  color="inherit" 
+                  onClick={() => {auth.clearJwt(() => history.push("/"))}}
+                  startIcon={
+                    <ExitToApp />
+                  }
+                >
+                  Sign out
+                </Button>
+              </span>
+            )
+          }
         </Toolbar>
       </AppBar>
     </div>

@@ -12,148 +12,153 @@ import {
   Avatar
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
-import FileUpload from "@material-ui/icons/FileCopy"
+import AddPhoto from "@material-ui/icons/AddPhotoAlternate"
+import { Edit } from "@material-ui/icons"
 
 import { read, update } from "./api-user"
 import auth from "../auth/auth-helper"
 
 const useStyles = makeStyles( theme => ({
+  card: {
+    alignItems: "center",
+    display: "flex",
+    flexDirection: "column"
+  },
   title: {
     padding:`${theme.spacing(3)}px ${theme.spacing(2.5)}px
     ${theme.spacing(2)}px`,
     color: theme.palette.text.secondary
+  },
+  bigAvatar: {
+    margin: "0 auto",
+    height: 80,
+    width: 80
   }
 }))
 
-const EditProfile = (props) => {
+const EditProfile = ({match}) => {
 
-  const [redirectToProfile, setRedirectToProfile] = useState(false)
-  const [name, setName] = useState("")
-  const [userId, setUserId] = useState("")
-  const [password, setPassword] = useState("")
-  const [email, setEmail] = useState("")
-  const [error, setError] = useState("")
-  const [about, setAbout] = useState("")
-  const [photo, setPhoto] = useState("")
-  const [photoFile, setPhotoFile] = useState(null)
+  const [values, setValues] = useState({
+    name: "",
+    about: "",
+    photo: "",
+    email: "",
+    password: "",
+    redirectToProfile: false,
+    error: "",
+    id: ""
+  })
+  const jwt = auth.isAuthenticated()
   const classes = useStyles()
-  const photoUrl = userId
-  ? `/api/users/photo/${userId}?${new Date().getTime()}`
-  : '/api/users/defaultphoto'
-
-  const init = userId => {
-    const jwt = auth.isAuthenticated()
-    read({
-      userId: userId
-    }, 
-    {t: jwt.token})
-      .then( data => {
-
-        if (data.error) {
-          setError(data.error)
-        } else {
-          setUserId(data._id)
-          setName(data.name)
-          setEmail(data.email)
-          setAbout(data.about)
-        }
-      }
-    )
-  }
+  const photoUrl = values.id ? 
+  `/api/users/photo/${values.id}?${new Date().getTime()}` : 
+  "/api/users/defaultphoto"
 
   useEffect(() => {
-    init(props.match.params.userId)
-  }, [])
+    const abortController = new AbortController()
+    const signal = abortController.signal
+
+    read({
+      userId: match.params.userId
+    }, {t: jwt.token}, signal).then( data => {
+
+      if (data && data.error) {
+        setValues({...values, error: data.error})
+      } else {
+        setValues({
+          ...values, 
+          id: data._id, 
+          name: data.name, 
+          email: data.email, 
+          about: data.about
+        })
+      }
+
+    })
+    return () => {
+      abortController.abort()
+    }
+  }, [match.params.userId])
 
   const handleSubmit = () => {
-    const jwt = auth.isAuthenticated()
-    const userData = new FormData()
-    userData.set("name", name)
-    userData.set("email", email)
-    userData.set("password", password)
-    userData.set("about", about)
-    userData.set("photo", photoFile)
+    let userData = new FormData()
+    values.name && userData.append("name", values.name)
+    values.email && userData.append("email", values.email)
+    values.passoword && userData.append("passoword", values.passoword)
+    values.about && userData.append("about", values.about)
+    values.photo && userData.append("photo", values.photo)
     update({
-      userId: props.match.params.userId
+      userId: match.params.userId
     }, {
       t: jwt.token
     }, userData).then( data => {
 
-      if (data.error) {
-        setError(data.error)
+      if (data && data.error) {
+        setValues({...values, error: data.error})
       } else {
-        setUserId(data._id)
-        setRedirectToProfile(true)
+        setValues({
+          ...values, 
+          redirectToProfile: true
+        })
       }
+
     })
   }
 
-  const handleChange = field => event => {
-    switch(field) {
-      case "name":
-        setName(event.target.value)
-        break
-      case "email":
-        setEmail(event.target.value)
-        break
-      case "password":
-        setPassword(event.target.value)
-        break
-      case "about":
-        setAbout(event.target.value)
-      case "photo":
-        setPhoto(event.target.value)
-        setPhotoFile(event.target.files[0])
-      default:
-        break
-    }
+  const handleChange = name => event => {
+    const value = name === "photo" ? 
+    event.target.files[0] : 
+    event.target.value
+    setValues({...values, [name]: value})
   }
 
-  if (redirectToProfile) {
-    return (<Redirect to={"/user/" + userId}/>)
+  if (values.redirectToProfile) {
+    return (<Redirect to={"/user/" + values.userId}/>)
   }
 
   return (
-    <Card>
-      <CardContent>
+    <Card className={classes.card}>
+      <CardContent className={classes.card}>
         <Typography 
           type="headline" 
           component="h2" 
+          align="center"
           className={classes.title}
         >
           Edit Profile
         </Typography>
 
-        <Avatar>
-          <Avatar src={photoUrl}/>
-        </Avatar>
+        <Avatar src={photoUrl} className={classes.bigAvatar}/>
+        <br/>
+        
+        <label htmlFor="icon-button-file">
+          <Button variant="contained" color="default" component="span">
+            <AddPhoto/>
+            Upload
+          </Button>
+        </label>
 
         <input 
           accept="image/*" 
           onChange={handleChange("photo")} 
+          style={{display: "none"}}
           id="icon-button-file" 
-          type="file"
-          required
+          type="file" 
         />
-        
-        <label htmlFor="icon-button-file">
-          <Button variant="contained" color="default" component="span">
-            Upload
-            <FileUpload/>
-          </Button>
-        </label>
-        
+
         <span>
-          {photo ? photo.name : ""}
+          {values.photo ? values.photo.name : ""}
         </span>
         <br/>
 
         <TextField 
           id="name" 
           label="Name" 
-          value={name} 
+          value={values.name} 
           onChange={handleChange("name")} 
           margin="normal"
+          variant="outlined"
+          size="small"
         />
         <br/>
 
@@ -161,9 +166,11 @@ const EditProfile = (props) => {
           id="email" 
           type="email" 
           label="Email" 
-          value={email} 
+          value={values.email} 
           onChange={handleChange("email")} 
           margin="normal"
+          variant="outlined"
+          size="small"
         />
         <br/>
 
@@ -171,30 +178,34 @@ const EditProfile = (props) => {
           id="multiline-flexible"
           label="About"
           multiline
-          rows="2"
-          value={about}
+          rows="3"
+          value={values.about}
           onChange={handleChange("about")}
           margin="normal"
-        /><br/>
+          variant="outlined"
+          size="small"
+        />
+        <br/>
 
         <TextField 
           id="password" 
           type="password" 
           label="Password"  
-          value={password} 
+          value={values.password} 
           onChange={handleChange("password")} 
           margin="normal"
-          required
+          variant="outlined"
+          size="small"
         />
         <br/> 
         
         {
-          error && (
+          values.error && (
             <Typography component="p" color="error">
               <Icon color="error">
                 error
               </Icon>
-              {error}
+              {values.error}
             </Typography>
           )
         }
@@ -203,10 +214,13 @@ const EditProfile = (props) => {
       <CardActions>
         <Button 
           color="primary" 
-          variant="contained" 
-          onClick={handleSubmit} 
+          variant="outlined" 
+          onClick={handleSubmit}
+          startIcon={
+            <Edit />
+          }
         >
-          Submit
+          Change
         </Button>
       </CardActions>
     </Card>

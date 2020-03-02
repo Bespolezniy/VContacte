@@ -31,13 +31,20 @@ const Users = () => {
   const classes = useStyles()
 
   useEffect(() => {
-    list().then( data => {
-      if (data.error) {
+    const abortController = new AbortController()
+    const signal = abortController.signal
+
+    list(signal).then( data => {
+
+      if (data && data.error) {
         console.log(data.error)
       } else {
         setUsers(data)
       }
-    })      
+
+    })  
+    
+    return () => abortController.abort()
   }, [])
 
   return (
@@ -47,25 +54,29 @@ const Users = () => {
       </Typography>
 
       <List dense>
-        {users.map((item, i) => (
-          <Link to={"/user/" + item._id} key={i}>
-            <ListItem button="button">
-              <ListItemAvatar>
-                <Avatar>
-                  <Person/>
-                </Avatar>
-              </ListItemAvatar>
+        {users.map((item, i) => {
+          const photoUrl = item._id ? 
+          `/api/users/photo/${item._id}?${new Date().getTime()}`: 
+          "/api/users/defaultphoto"
 
-              <ListItemText primary={item.name}/>
+          return (
+            <Link to={"/user/" + item._id} key={i}>
+              <ListItem button="button">
+                <ListItemAvatar>
+                  <Avatar src={photoUrl} />
+                </ListItemAvatar>
 
-              <ListItemSecondaryAction>
-                <IconButton>
-                  <ArrowForward/>
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          </Link>
-        ))}
+                <ListItemText primary={item.name}/>
+
+                <ListItemSecondaryAction>
+                  <IconButton>
+                    <ArrowForward/>
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            </Link>
+          )
+        })}
       </List>
     </Paper>
   )

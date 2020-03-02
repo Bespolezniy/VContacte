@@ -15,26 +15,26 @@ import { Delete } from "@material-ui/icons"
 import { remove } from "./api-user"
 import auth from "../auth/auth-helper"
 
-const DeleteUser = (props) => {
+const DeleteUser = ({userId}) => {
 
   const [redirect, setRedirect] = useState(false)
   const [open, setOpen] = useState(false)
+  const jwt = auth.isAuthenticated()
 
   const handleClick = () => setOpen(true)
 
   const handleRequestClose = () => setOpen(false)
    
   const deleteAccount = () => {
-    const jwt = auth.isAuthenticated()
     remove({
-      userId: props.userId
+      userId: userId
     }, {t: jwt.token})
       .then( data => {
 
-        if (data.error) {
+        if (data && data.error) {
           console.log(data.error)
         } else {
-          auth.signout(() => console.log("deleted"))
+          auth.clearJwt(() => console.log("deleted"))
           setRedirect(true)
         }
       }
